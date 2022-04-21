@@ -1,0 +1,8 @@
+cifar10
+data
+figure
+mnist
+venv
+.idea
+.vscode
+__pycache__
