@@ -1,11 +1,13 @@
 import torch.nn as nn
 
 class AutoEncoder(nn.Module):
-    def __init__(self):
+    def __init__(self, dataset):
+        self._dataset = dataset
+        self._img_size = 28 if dataset == 'mnist' else 32
         super(AutoEncoder, self).__init__()
 
         self.encoder = nn.Sequential(
-            nn.Linear(28*28, 128),
+            nn.Linear(self._img_size**2, 128),
             nn.Tanh(),
             nn.Linear(128, 64),
             nn.Tanh(),

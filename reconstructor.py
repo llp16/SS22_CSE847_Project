@@ -1,42 +1,25 @@
-from cProfile import label
-import torch
-import torch.utils.data as Data
 import torchvision
-import torch.nn as nn
-from matplotlib import image
-import numpy as np
-import json
-
-import os
 import torch
 import torch.nn as nn
-import torch.optim as optim
 import torch.utils.data as Data
 import torch.nn.functional as F
 import torchvision.utils
-from torchvision import models
-import matplotlib.pyplot as plt
-from torchvision import datasets, transforms
 from mnist import MNet
+import loader
 # from pgd import pgd_attack
 
 class Reconstructor(object):
-    def __init__(self, encoder, batch_size, epoch, adv_type):
+    def __init__(self, encoder, batch_size, epoch, dataset):
         self._encoder = encoder
         self._batch_size = batch_size
         self._epoch = epoch
         self._device = torch.device("cuda")
-        self._adv_type = adv_type
+        # self._adv_type = adv_type
+        self._dataset = dataset
 
 
     def load_data(self):
-        test_data = torchvision.datasets.MNIST(
-            root='./mnist/',
-            train=False,  # this is training data
-            transform=torchvision.transforms.ToTensor(),  # Converts a PIL.Image or numpy.ndarray to
-            # torch.FloatTensor of shape (C x H x W) and normalize in the range [0.0, 1.0]
-            download=False,  # download it if you don't have it
-        )
+        test_data = loader.load_data(self._dataset, True)
         test_loader = Data.DataLoader(dataset=test_data, batch_size=self._batch_size, shuffle=True)
         return test_data, test_loader
     
@@ -48,20 +31,16 @@ class Reconstructor(object):
         labels = labels.to(self._device)
         ori_images = images.data
         loss_func = nn.MSELoss()
-        
+
         # random_nosie = torch.Tensor(images.shape).uniform_(-eps, eps).to(self.device)
         # # print(random_nosie)
         # images = torch.clamp(ori_images + random_nosie, min=0, max=1).detach_()
-
-    
 
         for _ in range(iters):
             images.requires_grad = True
             outputs = model(images)
 
             model.zero_grad()
-            # print("in:{}".format(type(outputs)))
-            # print("out:{}".format(type(labels)))
             cost = F.nll_loss(outputs, labels)
             cost.backward()
             adv_images = images + alpha * images.grad.sign()
@@ -76,7 +55,7 @@ class Reconstructor(object):
         _, test_loader = self.load_data()
 
         m_net = MNet()
-        m_net.load_state_dict(torch.load("./mnist_cnn.pt"))
+        m_net.load_state_dict(torch.load("./model/mnist_cnn.pt"))
         if torch.cuda.is_available():
             m_net.cuda()
             self._encoder.cuda()
