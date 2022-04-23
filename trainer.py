@@ -5,7 +5,7 @@ import torch.utils.data as Data
 import torchvision
 import numpy as np
 import torch.nn as nn
-
+import loader
 
 N_TEST_IMG = 5
 LR = 0.005         # learning rate
@@ -13,22 +13,18 @@ DOWNLOAD_MNIST = False
 PLOT_PATH = "./figure/"
 
 
+
 class Trainer(object):
 
-        def __init__(self, encoder, batch_size, epoch, model_path):
+        def __init__(self, encoder, batch_size, epoch, model_path, dataset):
             self._batch_size = batch_size
             self._epoch = epoch
             self._encoder = encoder
             self._model_path = model_path
+            self._dataset = dataset
 
         def load_data(self):
-            train_data = torchvision.datasets.MNIST(
-                root='./mnist/',
-                train=True,  # this is training data
-                transform=torchvision.transforms.ToTensor(),  # Converts a PIL.Image or numpy.ndarray to
-                # torch.FloatTensor of shape (C x H x W) and normalize in the range [0.0, 1.0]
-                download=DOWNLOAD_MNIST,  # download it if you don't have it
-            )
+            train_data = loader.load_data(self._dataset, True)
             train_loader = Data.DataLoader(dataset=train_data, batch_size=self._batch_size, shuffle=True)
             return train_data, train_loader
 
