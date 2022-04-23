@@ -24,17 +24,10 @@ class Reconstructor(object):
         return test_data, test_loader
 
     def pgd_attack(self, model, images, labels, eps=0.3, alpha=0.01, iters=40):
-        # images = images.to(device)
-        # print(images)
-        # labels = labels.to(device)
         images = images.to(self._device)
         labels = labels.to(self._device)
         ori_images = images.data
-        loss_func = nn.MSELoss()
-
-        # random_nosie = torch.Tensor(images.shape).uniform_(-eps, eps).to(self.device)
-        # # print(random_nosie)
-        # images = torch.clamp(ori_images + random_nosie, min=0, max=1).detach_()
+        # loss_func = nn.MSELoss()
 
         for _ in range(iters):
             images.requires_grad = True
@@ -76,9 +69,8 @@ class Reconstructor(object):
 
                 loss_func = nn.MSELoss()
                 loss = loss_func(decoded, b_y)  # mean square error
-                MSE_list.append(loss)
+                MSE_list.append(loss.item())
 
-                if step % 100 == 0:
-                    print('Epoch: ', epoch, '| test loss: %.4f' % loss.cpu().data.numpy())
-        print("Test set MSE:{:.4f}".format(torch.mean(torch.stack(MSE_list))))
+            print('Epoch: ', epoch, '| test loss: %.4f' % loss.cpu().data.numpy())
+        print("Test set MSE:{:.4f}".format(torch.mean(MSE_list)))
         

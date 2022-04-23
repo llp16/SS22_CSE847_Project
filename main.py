@@ -28,14 +28,17 @@ if __name__ == "__main__":
 
     autoencoder = encoder.AutoEncoder(DATASET)
     if args.test:
+        # test non-pgd performance of reconstructor
         autoencoder.load_state_dict(torch.load(MODEL_PATH))
         evaluator = Evaluator(autoencoder, BATCH_SIZE, EPOCH, DATASET)
         evaluator.evaluate()
     elif args.reconstruct:
+        # test pgd attack performance of reconstructor
         autoencoder.load_state_dict(torch.load(MODEL_PATH))
         reconstructor = Reconstructor(autoencoder, BATCH_SIZE, EPOCH, DATASET)
         reconstructor.eval_attack()
     else:
+        # train model
         trainer = Trainer(autoencoder, BATCH_SIZE, EPOCH, MODEL_PATH, DATASET)
         trainer.train()
 
